@@ -1,0 +1,22 @@
+.Sidebar{
+    width: auto;
+    background-color: white;
+    position: 'fixed'
+}
+
+.Sidebar_item{
+    width: 200px;
+    text-align: center;
+    font-size: px;
+    border: solid;
+    margin: 10px;
+}
+
+.Sidebar_item:hover{
+    background-color: rgb(224, 93, 115);
+}
+
+.Sidebar a{
+    text-decoration: none;
+    color: rgb(68, 68, 69);
+}

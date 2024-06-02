@@ -1,10 +1,43 @@
 import Head from "next/head";
 import { Container, Form, Button } from "react-bootstrap";
 import { Inter } from "next/font/google";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const router = useRouter()
+  const [admin, setAdmin] = useState({
+    username: '',
+    password: '',
+  })
+  const [error, setError] = useState(null)
+
+  function handleChange(e) {
+    setAdmin({ ...admin, [e.target.name]: e.target.value })
+  }
+
+  function submit() {
+    fetch('http://localhost:4000/admin/login', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(admin),
+    }).then(res => res.json()).then(data => {
+      if (data.success === true) {
+        localStorage.setItem('admin-token', data.token);
+        router.push('/products');
+      } else {
+        setError(data)
+      }
+    }).catch(error => console.log(error))
+  }
+
+
+
   return (
     <>
       <Head>
@@ -16,15 +49,16 @@ export default function Home() {
       <main className={`${inter.className}` + 'd-flex w-100'}>
         <Container className="p-4 d-flex justify-content-center align-items-center" >
           <Form className="p-5 fs-4 border border-secondary" >
+            {error && <p style={{ color: 'red' }}>{error.message + ', Try again'}</p>}
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Username</Form.Label>
-              <Form.Control type="email" placeholder="name@example.com" />
+              <Form.Control type="text" onChange={(e) => handleChange(e)} name='username' placeholder="username" />
             </Form.Group>
             <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password"/>
+              <Form.Control onChange={(e) => handleChange(e)} name='password' type="password" />
             </Form.Group>
-            <Button type='submit'>Submit</Button>
+            <Button onClick={submit}>Submit</Button>
           </Form>
         </Container>
       </main>

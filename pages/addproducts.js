@@ -1,10 +1,23 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import upload_area from '@/public/Assets/upload_area.svg'
 import Image from 'next/image'
 import { Container, Form, Row, Col, Button, FormText } from 'react-bootstrap'
+import { readToken } from '@/token';
+import { useRouter } from 'next/router';
 
 export default function AddProduct() {
     const [image, setImage] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState(false)
+    const router = useRouter()
+    let token;
+
+    useEffect(()=>{
+        token = readToken()
+        if(token){
+            setIsAuthorized(true)
+        }
+    }, [router.asPath])
+
     const [productDetails, setProductDetails] = useState({
         id: '',
         name: '',
@@ -28,6 +41,7 @@ export default function AddProduct() {
         console.log(productDetails);
         let responseData;
         let product = productDetails;
+        let token = localStorage.getItem('admin-token')
 
         let formData = new FormData();
         formData.append('product', image);
@@ -44,11 +58,12 @@ export default function AddProduct() {
         if (responseData.success) {
             product.image = responseData.image_url;
             console.log(product);
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/addproduct`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/addproduct`, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
+                    'admin-token': token
                 },
                 body: JSON.stringify(product),
             }).then(res => res.json()).then((data) => {
@@ -56,6 +71,8 @@ export default function AddProduct() {
             })
         }
     }
+
+    if(!isAuthorized)return <p>Unauthorized</p>
 
     return (
         <Container className='d-flex w-50 p-4 justify-content-center'>

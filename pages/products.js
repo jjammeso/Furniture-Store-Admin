@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Container, Row, Col, Button, Form } from 'react-bootstrap'
+import { readToken } from '@/token'
+import { useRouter } from 'next/router'
 
 export default function Products() {
     const [products, setProdcuts] = useState([])
     const [stocks, setStocks] = useState({})
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const router = useRouter()
+    let token;
 
     const getProducts = async () => {
         await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/products`).then(res => res.json())
@@ -13,14 +18,20 @@ export default function Products() {
 
     useEffect(() => {
         getProducts();
-    }, []);
+        token = readToken()
+        if(token){
+            setIsAuthorized(true);
+        }
+    }, [router.asPath]);
 
     const removeProduct = async (id) => {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/deleteproduct`, {
+        const token = localStorage.getItem('admin-token')
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/deleteproduct`, {
             method: 'DELETE',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
+                'admin-token':token
             },
             body: JSON.stringify({ id: id })
         }).then(data => data.json())
@@ -32,19 +43,23 @@ export default function Products() {
     };
 
     const updateProduct = async (id) => {
+        const token = localStorage.getItem('admin-token')
         const newStock = stocks[id];
         console.log(id + 'lskfls' + newStock);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/update/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/update/${id}`, {
             method: 'PUT',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
+                'admin-token':token
             },
             body: JSON.stringify({ stock: newStock })
         })
         const data = await res.json()
+        console.log(data);
         data.success ? alert('Product Updated') : alert('Failed');
     }
+    if(!isAuthorized) return <p>Unauthorized</p>
 
     return (
         <Container>

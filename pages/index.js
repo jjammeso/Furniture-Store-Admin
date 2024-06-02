@@ -19,7 +19,7 @@ export default function Home() {
   }
 
   function submit() {
-    fetch('http://localhost:4000/admin/login', {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
